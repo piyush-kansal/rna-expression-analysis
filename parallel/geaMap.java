@@ -1,10 +1,10 @@
 /**
  * 
- * @file		-	geaMap.java
+ * @file    -   geaMap.java
  * 
- * @purpose	-	Analyze Gene Expressions
+ * @purpose -   Analyze Gene Expressions
  * 
- * @author 		-	Himanshu Jindal, Piyush Kansal
+ * @author  -   Piyush Kansal, Himanshu Jindal
  * 
  */
 
@@ -71,20 +71,20 @@ import java.util.Vector;
 
 /**
  * 
- * @class	-	geaMap
- * @purpose	-	To define a class to analyze Gene Expressions
+ * @class   -   geaMap
+ * @purpose -   To define a class to analyze Gene Expressions
  *
  */
 public class geaMap extends JnomicsMapper<Text, NullWritable, Text, IntWritable> {
 
-    private static final JnomicsArgument 	refgenes_arg 	= new JnomicsArgument( "refGenes", "Reference Genes", true );
-	private static final String 			_TAB_			=	"\t";
-	private static final String 			_HYPHEN_		=	"-";
-    private static final String 			_DOTS_			=	"..";
-    private static final int 				_SPLITS_		=	5;
+    private static final JnomicsArgument    refgenes_arg    = new JnomicsArgument( "refGenes", "Reference Genes", true );
+    private static final String             _TAB_           =   "\t";
+    private static final String             _HYPHEN_        =   "-";
+    private static final String             _DOTS_          =   "..";
+    private static final int                _SPLITS_        =   5;
 
-	private String 							refGenes;
-    private Vector<RefGenes> 				myVector 		= new Vector<RefGenes>();
+    private String                          refGenes;
+    private Vector<RefGenes>                myVector        = new Vector<RefGenes>();
     
     @Override
     public Class getOutputKeyClass() {
@@ -105,28 +105,28 @@ public class geaMap extends JnomicsMapper<Text, NullWritable, Text, IntWritable>
      * Class for multi-keys mapping
      */
     public static class RefGenes {
-    	long start;
-    	long end;
-    	long geneID;
+        long start;
+        long end;
+        long geneID;
 
-    	public RefGenes( long s, long e, long id ) { 
-    		start = s;
-    		end = e;
-    		geneID = id;
-    	}
-    	
-    	public String toString() {
-    		return start + " " + end + " " + geneID + "\n";
-    	}
+        public RefGenes( long s, long e, long id ) { 
+            start = s;
+            end = e;
+            geneID = id;
+        }
+        
+        public String toString() {
+            return start + " " + end + " " + geneID + "\n";
+        }
     }
     
     @Override
     protected void setup(Context context) throws IOException, InterruptedException {
-		Configuration conf = context.getConfiguration();
-		refGenes = conf.get( refgenes_arg.getName() );
+        Configuration conf = context.getConfiguration();
+        refGenes = conf.get( refgenes_arg.getName() );
 
-		Path ip = new Path( refGenes );
-		FileSystem ipFs = FileSystem.get( conf );
+        Path ip = new Path( refGenes );
+        FileSystem ipFs = FileSystem.get( conf );
         if( !ipFs.exists( ip ) ) {
             System.err.println( "File: " + ip.getName()  + " does not exists." );
             System.exit( 1 );
@@ -138,60 +138,60 @@ public class geaMap extends JnomicsMapper<Text, NullWritable, Text, IntWritable>
         /*
          * Creates the multi-key map
          */
-		while( true ) {
-			String curLine = br.readLine();
-			if( null == curLine ) {
-				break;
-			}
+        while( true ) {
+            String curLine = br.readLine();
+            if( null == curLine ) {
+                break;
+            }
 
-			String sub[] = curLine.split( _TAB_, _SPLITS_ );
-			long s = Long.parseLong( sub[0].substring( 0, sub[0].indexOf( _DOTS_ ) ) );
-			long e = Long.parseLong( sub[0].substring( sub[0].indexOf( _DOTS_ ) + _DOTS_.length(), sub[0].length() ) );
-			
-			RefGenes tempMap = new RefGenes( s, e, Long.parseLong(sub[3]) );
-			myVector.add( index, tempMap );
-			
-			++index;
-		}
+            String sub[] = curLine.split( _TAB_, _SPLITS_ );
+            long s = Long.parseLong( sub[0].substring( 0, sub[0].indexOf( _DOTS_ ) ) );
+            long e = Long.parseLong( sub[0].substring( sub[0].indexOf( _DOTS_ ) + _DOTS_.length(), sub[0].length() ) );
+            
+            RefGenes tempMap = new RefGenes( s, e, Long.parseLong(sub[3]) );
+            myVector.add( index, tempMap );
+            
+            ++index;
+        }
     }
 
     /*
      * Searches for a key
      */
     private String getGeneID( long index ) {
-    	int start = 0, end = myVector.size();
-    	
-    	while( start <= end ) {
-    		int pos = (start + end)/2;
-    		RefGenes temp = myVector.get( pos );
-    		
-    		if( ( index >= temp.start ) && ( index <= temp.end ) ) {
-    			//return temp.geneID;
-    			return temp.geneID + _HYPHEN_ + (temp.end - temp.start + 1); 
-    		}
-    		else if( index < temp.start ) {
-    			end = pos - 1;
-    		}
-    		else if( index > temp.end ) {
-    			start = pos + 1;
-    		}
-    	}
-    	
-    	return null;
+        int start = 0, end = myVector.size();
+        
+        while( start <= end ) {
+            int pos = (start + end)/2;
+            RefGenes temp = myVector.get( pos );
+            
+            if( ( index >= temp.start ) && ( index <= temp.end ) ) {
+                //return temp.geneID;
+                return temp.geneID + _HYPHEN_ + (temp.end - temp.start + 1); 
+            }
+            else if( index < temp.start ) {
+                end = pos - 1;
+            }
+            else if( index > temp.end ) {
+                start = pos + 1;
+            }
+        }
+        
+        return null;
     }
     
     @Override
     protected void map( Text key, NullWritable value, Context context ) throws IOException, InterruptedException {
-    	String keyStr = key.toString();
-		String sub[] = keyStr.split( _TAB_, _SPLITS_ );
-		
-		long index = Long.parseLong( sub[1] );
-		int depth = Integer.parseInt( sub[3] );
-		String genID = getGeneID( index );
-		
-		if( null != genID ) {
-			String[] curName = ((FileSplit)context.getInputSplit()).getPath().getName().split( _HYPHEN_ );
-			context.write( new Text( genID + _HYPHEN_ + curName[0] ), new IntWritable( depth ) );
-		}
+        String keyStr = key.toString();
+        String sub[] = keyStr.split( _TAB_, _SPLITS_ );
+        
+        long index = Long.parseLong( sub[1] );
+        int depth = Integer.parseInt( sub[3] );
+        String genID = getGeneID( index );
+        
+        if( null != genID ) {
+            String[] curName = ((FileSplit)context.getInputSplit()).getPath().getName().split( _HYPHEN_ );
+            context.write( new Text( genID + _HYPHEN_ + curName[0] ), new IntWritable( depth ) );
+        }
     }
 }

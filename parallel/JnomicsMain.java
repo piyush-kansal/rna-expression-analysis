@@ -59,9 +59,9 @@ public class JnomicsMain extends Configured implements Tool {
         System.out.println("describe\t:\tDescribe a mapper or reducer");
         //System.out.println("helper-task-list\t:\tList all helper tasks");
         //System.out.println("helper-task\t:\tRun helper task");
-		System.out.println("loader-pe\t:\tLoad paired end sequencing file into hdfs");
-		System.out.println("merge-fetch-exp\t:\tMerge expression matrix on HDFS and fetch it to local file system");
-		System.out.println("job\t\t:\tsubmit a job");
+        System.out.println("loader-pe\t:\tLoad paired end sequencing file into hdfs");
+        System.out.println("merge-fetch-exp\t:\tMerge expression matrix on HDFS and fetch it to local file system");
+        System.out.println("job\t\t:\tsubmit a job");
     }
 
     public static void main(String []args) throws Exception {
@@ -81,9 +81,9 @@ public class JnomicsMain extends Configured implements Tool {
                 System.out.println(t);
             }
         }else if(args[0].compareTo("loader-pe") == 0){
-        	PairedEndLoader.main(Arrays.copyOfRange(args,1,args.length));
+            PairedEndLoader.main(Arrays.copyOfRange(args,1,args.length));
         }else if(args[0].compareTo("merge-fetch-exp") == 0){
-        	mergeExp.main(Arrays.copyOfRange(args,1,args.length));
+            mergeExp.main(Arrays.copyOfRange(args,1,args.length));
         }else if(args[0].compareTo("helper-task-list") == 0){
             System.out.println("Available Helper Tasks:");
             for(Object t: helperClasses.keySet()){
